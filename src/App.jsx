@@ -35,50 +35,81 @@ function Board({xIsNext, squares, onPlay}) /*Функционал Board*/{
   return /*Что следует после, возвращается, как значения функций*/(
     /*используем данные скобки, чтобы получить несколько смежных фрагментов*/ <> 
     <div className="status">{status/*выводим status*/}</div>
-    <div className="board-row"/*Свойство CSS*/>
-     <Square value={squares[0]} onSquareClick={() => handleClick(0)} />
-     <Square value={squares[1]} onSquareClick={() => handleClick(1)} />
-     <Square value={squares[2]} onSquareClick={() => handleClick(2)} />
-    </div>
-    <div className="board-row"/*Свойство CSS*/>
-      <Square value={squares[3]} onSquareClick={() => handleClick(3)} />
-      <Square value={squares[4]} onSquareClick={() => handleClick(4)} />
-      <Square value={squares[5]} onSquareClick={() => handleClick(5)} />
-    </div>
-    <div className="board-row"/*Свойство CSS*/>
-      <Square value={squares[6]} onSquareClick={() => handleClick(6)} />
-      <Square value={squares[7]} onSquareClick={() => handleClick(7)} />
-      <Square value={squares[8]} onSquareClick={() => handleClick(8)} />
-    </div>
+      <div className="board-row"/*Свойство CSS*/>
+        <Square value={squares[0]} onSquareClick={() => handleClick(0)} />
+        <Square value={squares[1]} onSquareClick={() => handleClick(1)} />
+        <Square value={squares[2]} onSquareClick={() => handleClick(2)} />
+      </div>
+      <div className="board-row"/*Свойство CSS*/>
+        <Square value={squares[3]} onSquareClick={() => handleClick(3)} />
+        <Square value={squares[4]} onSquareClick={() => handleClick(4)} />
+        <Square value={squares[5]} onSquareClick={() => handleClick(5)} />
+      </div>
+      <div className="board-row"/*Свойство CSS*/>
+        <Square value={squares[6]} onSquareClick={() => handleClick(6)} />
+        <Square value={squares[7]} onSquareClick={() => handleClick(7)} />
+        <Square value={squares[8]} onSquareClick={() => handleClick(8)} />
+      </div>
     </> /*используем данные скобки, чтобы получить несколько смежных фрагментов*/
   );
   }
 
 export default function Game() /*Сообщает о том, что данная функция является основной в этом коде, и становиться доступной за пределами файлов*/ {
-  const [xIsNext, setXIsNext] = useState(true); /*объявляет, что X будет ходить первым*/
-  const [history, setHistory] = useState([Array(9).fill(null)]) /*Создается массив из 9 элементов, который присвает значение null.useState объявляет вокруг squares переменную состояние,для которого изначально задано значение из массива */;
-  const currentSquares = history[history.length - 1];
+  const [history, setHistory] = useState([
+    Array(9).fill(null)
+  ]); /*Создается массив из 9 элементов, который присвает значение null.useState объявляет вокруг squares переменную состояние,для которого изначально задано значение из массива */;
+  const [currentMove, setCurrentMove] = useState(0);
+  const xIsNext = currentMove % 2 === 0;
+  const currentSquares = history[currentMove];
+
   function handlePlay(nextSquares){
-    setHistory([...history, nextSquares]); /*Cоздается новый массив, который содержит все элементы history, то есть он будет их перечислять*/
-    setXIsNext(!xIsNext);
+    const nextHistory = [
+      ...history.slice(0, currentMove + 1),
+      nextSquares,
+    ];
+    setHistory(nextHistory);
+    // setHistory([...history, nextSquares]); /*Cоздается новый массив, который содержит все элементы history, то есть он будет их перечислять*/
+    setCurrentMove(nextHistory.length - 1);
   }
+
+  function jumpTo(nextMove) {
+    setCurrentMove(nextMove);
+  }
+  
+  const moves = history.map((squares, move) => {
+    let description;
+    if (move > 0) {
+      description = 'Go to move #' + move;
+    } else {
+      description = 'Go  to game start';
+    }
+    return(
+      <li key={move}>
+        <button onClick={() => jumpTo(move)}>
+            {description /*' => ' - стрелочная функция, короткий способ определения функций. Когда мы кликнем на квадрат, то код после стрелки будет запущен, вызывая jumpTo */}
+          </button>  
+      </li>
+    );
+  });
+
   return ( /*Что следует после, возвращается, как значения к функциям*/
   <div className="game">
     <div className="game-board">
-      <Board xIsNext={xIsNext} squares={currentSquares} onPlay={handlePlay} />
+      <Board 
+        xIsNext={xIsNext} 
+        squares={currentSquares} 
+        onPlay={handlePlay} 
+      />
     </div>
     <div className="game-info">
-      <ol>{/*meeeow*/}</ol>
+      <ol>{moves}</ol>
     </div>
   </div>
- )
-  }
-
-function jumpTo(nextMove) {
-//todo
+  )
 }
 
- function calculateWinner (squares) {
+
+function calculateWinner (squares) {
   const lines = [
     [0, 1, 2],
     [3, 4, 5],
@@ -88,7 +119,7 @@ function jumpTo(nextMove) {
     [2, 5, 8],
     [0, 4, 8],
     [2, 4, 6]
-  ];
+  ]; /*Константа, определяющая победителя*/
   for (let i = 0; i < lines.length; i++) {
     const [a, b, c] = lines[i];
     if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
@@ -96,5 +127,5 @@ function jumpTo(nextMove) {
     }
   }
   return null;
-}
+} 
 
